@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>所得税計算ツール</title>
+    <style>
+        /* 背景だお */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom, #ff9999, #66ccff);
+            /* グラデかわゆ */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        /* メインのとこ */
+        .container {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        /* 入力欄だぜ */
+        input {
+            margin: 10px 0;
+            padding: 8px;
+            width: 100%;
+            max-width: 300px;
+            box-sizing: border-box;
+        }
+
+        /*スピンボタン邪魔なのじゃ*/
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        /* ボタンちゃん */
+        button {
+            padding: 10px 20px;
+            background: #007BFF;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        /* 計算結果 */
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>所得税計算ツール</h1>
+        <!-- 課税対象額を入力 -->
+        <label for="salary">課税対象額（円）:</label><br>
+        <input type="number" id="salary" placeholder="例: 500000"><br>
+        <!-- 扶養人数を入力 -->
+        <label for="dependents">扶養人数:</label><br>
+        <input type="number" id="dependents" placeholder="例: 2"><br>
+        <!-- 計算開始 -->
+        <button onclick="calculateTax()">計算</button>
+        <!-- 結果表示 -->
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        // 地獄の関数
+        function calculateTax() {
+            const salary = parseFloat(document.getElementById('salary').value);
+            const dependents = parseInt(document.getElementById('dependents').value);
+
+            // 入力値チェック
+            if (isNaN(salary) || isNaN(dependents) || salary <= 0 || dependents < 0) {
+                document.getElementById('result').textContent = '入力値が無効です。';
+                return;
+            }
+
+            // 社会保険料控除後の給与等の金額（例として10%を控除）
+            const salaryAfterDeductions = salary * 0.9;
+
+            // 給与所得控除の計算
+            let salaryDeduction;
+            if (salaryAfterDeductions <= 135416) {
+                salaryDeduction = 45834;
+            } else if (salaryAfterDeductions <= 299999) {
+                salaryDeduction = salaryAfterDeductions * 0.4 - 8333;
+            } else if (salaryAfterDeductions <= 549999) {
+                salaryDeduction = salaryAfterDeductions * 0.3 + 6667;
+            } else if (salaryAfterDeductions <= 708330) {
+                salaryDeduction = salaryAfterDeductions * 0.2 + 36667;
+            } else {
+                salaryDeduction = 162500;
+            }
+
+            // 課税給与所得金額の計算
+            const taxableIncome = salaryAfterDeductions - salaryDeduction - (31667 * dependents) - 40000;
+
+            // 所得税率に基づいて税額を計算
+            let tax;
+            if (taxableIncome <= 0) {
+                tax = 0;
+            } else if (taxableIncome <= 275000) {
+                tax = taxableIncome * 0.05105;
+            } else if (taxableIncome <= 579166) {
+                tax = taxableIncome * 0.1021 - 8296;
+            } else if (taxableIncome <= 750000) {
+                tax = taxableIncome * 0.2042 - 36374;
+            } else if (taxableIncome <= 1500000) {
+                tax = taxableIncome * 0.23483 - 54113;
+            } else if (taxableIncome <= 3333333) {
+                tax = taxableIncome * 0.33693 - 130688;
+            } else {
+                tax = taxableIncome * 0.4084 - 237893;
+            }
+
+            tax = Math.round(tax); // 小数点以下を四捨五入
+
+            // 結果をアニメーションで表示
+            animateNumber("result", tax);
+        }
+
+        // カタカタアニメ
+        function animateNumber(elementId, targetNumber) {
+            const element = document.getElementById(elementId);
+            let currentNumber = 0;
+            const increment = Math.ceil(targetNumber / 100); // 数字の増加量
+
+            const timer = setInterval(() => {
+                currentNumber += increment;
+                if (currentNumber >= targetNumber) {
+                    currentNumber = targetNumber;
+                    clearInterval(timer);
+                }
+                element.textContent = `計算された税額: ${currentNumber} 円`;
+            }, 10); // 更新間隔
+        }
+    </script>
+</body>
+
+</html>
