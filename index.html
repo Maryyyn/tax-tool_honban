@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電子計算機方式での計算ですぞ</title>
+    <style>
+        /* 背景だお */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(90deg, rgba(251, 213, 251, 1), rgba(149, 233, 243, 1));
+            /* グラデかわゆ */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        /* メインのとこ */
+        .container {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        /* 入力欄だぜ */
+        input {
+            margin: 10px 0;
+            padding: 8px;
+            width: 100%;
+            max-width: 300px;
+            box-sizing: border-box;
+        }
+
+        /*スピンボタン邪魔なのじゃ*/
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        /* ボタンちゃん */
+        button {
+            padding: 10px 20px;
+            background: #007BFF;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        /* 計算結果 */
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>電子計算機の特例ですぞ</h1>
+        <!-- 課税対象額を入力 -->
+        <label for="salary">その月の社会保険料等控除後の給与等の金額（円）:</label><br>
+        <input type="number" id="salary" placeholder="例: 200000"><br>
+        <!-- 扶養人数を入力 -->
+        <label for="dependents">扶養人数:</label><br>
+        <input type="number" id="dependents" placeholder="例: 1"><br>
+        <!-- 源泉控除対象配偶者の有無を入力 -->
+        <label>源泉控除対象配偶者:
+            <select id="spouse">
+                <option value="0">なし</option>
+                <option value="1">あり</option>
+            </select>
+        </label><br>
+        <!-- 計算開始 -->
+        <button onclick="calculateTax()">計算</button>
+        <!-- 結果表示 -->
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        function calculateTax() {
+            const salary = parseFloat(document.getElementById("salary").value);
+            const dependents = parseInt(document.getElementById("dependents").value, 10) || 0;
+            const hasSpouse = parseInt(document.getElementById("spouse").value, 10);
+
+            if (isNaN(salary) || salary <= 0) {
+                document.getElementById("result").innerHTML = "正しい金額を入力してね！";
+                return;
+            }
+
+            // **第1表：給与所得控除の計算**
+            let incomeDeduction;
+            if (salary <= 135416) {
+                incomeDeduction = 45834;
+            } else if (salary <= 149999) {
+                incomeDeduction = salary * 0.4 - 8333;
+            } else if (salary <= 299999) {
+                incomeDeduction = salary * 0.3 + 6667;
+            } else if (salary <= 549999) {
+                incomeDeduction = salary * 0.2 + 36667;
+            } else if (salary <= 708330) {
+                incomeDeduction = salary * 0.1 + 91667;
+            } else {
+                incomeDeduction = 162500;
+            }
+
+            // **第2表：扶養控除 + 配偶者控除**
+            const dependentDeduction = 31667 * (dependents + hasSpouse);
+
+            // **第3表：基礎控除**
+            let basicDeduction = 0;
+            if (salary <= 2162499) {
+                basicDeduction = 40000;
+            } else if (salary <= 2204166) {
+                basicDeduction = 26667;
+            } else if (salary <= 2245833) {
+                basicDeduction = 13334;
+            } else {
+                basicDeduction = 0;
+            }
+
+            // **課税給与所得金額 (B) の算出**
+            const taxableIncome = salary - incomeDeduction - dependentDeduction - basicDeduction;
+
+            if (taxableIncome <= 0) {
+                document.getElementById("result").innerHTML = "課税所得が0円以下のため、所得税は発生しません。";
+                return;
+            }
+
+            // **第4表：課税給与所得金額(B) に対する所得税の計算**
+            let tax = 0;
+            if (taxableIncome <= 162500) {
+                tax = taxableIncome * 0.05105;
+            } else if (taxableIncome <= 275000) {
+                tax = taxableIncome * 0.1021 - 8296;
+            } else if (taxableIncome <= 579166) {
+                tax = taxableIncome * 0.2042 - 36374;
+            } else if (taxableIncome <= 750000) {
+                tax = taxableIncome * 0.23483 - 54113;
+            } else if (taxableIncome <= 1500000) {
+                tax = taxableIncome * 0.33693 - 130688;
+            } else if (taxableIncome <= 3333333) {
+                tax = taxableIncome * 0.4084 - 237893;
+            } else {
+                tax = taxableIncome * 0.45945 - 408061;
+            }
+
+            // **小数点以下四捨五入**
+            tax = Math.round(tax);
+
+            // **結果を表示**
+            animateNumber("result", tax);
+        }
+
+        // **カタカタアニメ**
+        function animateNumber(elementId, targetNumber) {
+            const element = document.getElementById(elementId);
+            let currentNumber = 0;
+            const increment = Math.ceil(targetNumber / 100);
+
+            const timer = setInterval(() => {
+                currentNumber += increment;
+                if (currentNumber >= targetNumber) {
+                    currentNumber = targetNumber;
+                    clearInterval(timer);
+                }
+                element.textContent = `所得税額: ${currentNumber.toLocaleString()} 円`;
+            }, 10);
+        }
+    </script>
+</body>
+
+</html>
