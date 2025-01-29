@@ -76,11 +76,11 @@
     <div class="container">
         <h1>電子計算機の特例ですぞ</h1>
         <!-- 課税対象額を入力 -->
-        <label for="salary">課税対象額（円）:</label><br>
-        <input type="number" id="salary" placeholder="例: 500000"><br>
+        <label for="salary">その月の社会保険料等控除後の給与等の金額（円）:</label><br>
+        <input type="number" id="salary" placeholder="例: 200000"><br>
         <!-- 扶養人数を入力 -->
         <label for="dependents">扶養人数:</label><br>
-        <input type="number" id="dependents" placeholder="例: 2"><br>
+        <input type="number" id="dependents" placeholder="例: 1"><br>
         <!-- 計算開始 -->
         <button onclick="calculateTax()">計算</button>
         <!-- 結果表示 -->
@@ -155,7 +155,7 @@
                     currentNumber = targetNumber;
                     clearInterval(timer);
                 }
-                element.textContent = `計算された税額: ${currentNumber} 円`;
+                element.textContent = `所得税額: ${currentNumber} 円`;
             }, 10); // 更新間隔
         }
     </script>
