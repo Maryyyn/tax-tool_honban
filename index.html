@@ -163,7 +163,7 @@
             }
 
             // **小数点以下四捨五入**
-            tax = Math.round(tax);
+            tax = Math.round(tax/10)*10;
 
             // **結果を表示**
             animateNumber("result", tax);
