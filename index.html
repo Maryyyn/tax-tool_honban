@@ -106,7 +106,7 @@
                 return;
             }
 
-           // **給与所得控除の計算**
+           // **第1表**
             let salaryDeduction = 0;
             if (salary <= 135416) {
                 salaryDeduction = 0;
@@ -120,24 +120,28 @@
                 salaryDeduction = salary * 0.1 + 91667;
             }
 
-            // **基礎控除**
-            let basicDeduction = 40000;
+            // **第2表**
+            const dependentDeduction = 31667 * (dependents + hasSpouse);
 
-            // **扶養控除**
-            const dependentDeduction = 31667 * dependents;
+            // **第3表**
+            let basicDeduction = 0;
+            if (salary <= 240000) {
+                basicDeduction = 48000;
+            } else if (salary <= 850000) {
+                basicDeduction = 40000;
+            } else {
+                basicDeduction = 32000;
+            }
 
-            // **配偶者控除（対象の場合のみ）**
-            const spouseDeduction = hasSpouse ? 31667 : 0;
-
-            // **課税給与所得金額の算出**
-            const taxableIncome = salary - salaryDeduction - dependentDeduction - spouseDeduction - basicDeduction;
+            // **課税給与所得金額 (B) の算出**
+            const taxableIncome = salary - salaryDeduction - dependentDeduction - basicDeduction;
 
             if (taxableIncome <= 0) {
                 document.getElementById("taxResult").innerHTML = "課税所得が0円以下のため、所得税は発生しません。";
                 return;
             }
 
-             // **所得税の計算**
+            // **第4表：課税給与所得金額(B) に対する所得税の計算**
             let tax = 0;
             if (taxableIncome <= 162500) {
                 tax = taxableIncome * 0.05105;
@@ -155,11 +159,12 @@
                 tax = taxableIncome * 0.45945 - 408061;
             }
 
-            tax = Math.round(tax); // 小数点以下を四捨五入
+            // **小数点以下四捨五入**
+            tax = Math.round(tax);
 
             // 結果をアニメーションで表示
-            animateNumber("result", tax);
-        }
+            animateNumber("taxResult", tax);
+            }
 
         // カタカタアニメ
         function animateNumber(elementId, targetNumber) {
